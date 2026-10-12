@@ -13,6 +13,7 @@ Predicción de la supervivencia de los pasajeros del Titanic comparando 11 algor
 | `7_umbral_decision.ipynb` | Ajuste del umbral de decisión (sensibilidad vs especificidad) con predicciones fuera de pliegue; umbral elegido 0.32 |
 | `8_interpretacion_shap.ipynb` | Interpretación con SHAP: importancia global, dirección de efectos, interacciones clase × sexo y explicación de aciertos y errores individuales |
 | `9_fuga_y_mejoras.ipynb` | Mide el efecto de la fuga de información (pequeño, no significativo) y prueba las mejoras sugeridas por SHAP; genera el modelo final v2 |
+| `10_bitacora_ia.ipynb` | Bitácora del uso de IA generativa: prompts textuales, qué generó la IA, 13 errores/obstáculos y su corrección, validación y reflexión |
 | `app.py` | App web Flask y API JSON para predecir |
 
 ## Resultados
@@ -37,6 +38,6 @@ Mejor modelo: **Gradient Boosting** (confirmado con validación cruzada repetida
 
 ```bash
 pip install -r requirements.txt
-jupyter lab          # ejecutar los cuadernos en orden 1 → 9 (≈5 min en total)
+jupyter lab          # ejecutar los cuadernos en orden 1 → 10 (≈5 min en total)
 python app.py        # http://127.0.0.1:5000
 ```
