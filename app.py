@@ -18,6 +18,10 @@ import titanic_features  # noqa: F401  (necesario para cargar el pipeline guarda
 
 MODEL_PATH = "models/titanic_pipeline.joblib"
 model = joblib.load(MODEL_PATH)
+try:  # umbral ajustado en 7_umbral_decision.ipynb
+    THRESHOLD = float(open("results/umbral.txt").read().strip())
+except (OSError, ValueError):
+    THRESHOLD = 0.5
 app = Flask(__name__)
 
 COLUMNS = ["PassengerId", "Pclass", "Name", "Sex", "Age", "SibSp",
@@ -54,8 +58,9 @@ PAGE = """
  <button>Predecir</button>
 </form>
 {% if p is not none %}
-<div class="res"><h2 class="{{'ok' if p>=0.5 else 'no'}}">{{'Sobrevive' if p>=0.5 else 'No sobrevive'}}</h2>
-<p>Probabilidad estimada de sobrevivir: <b>{{'%.1f'|format(p*100)}} %</b></p></div>
+<div class="res"><h2 class="{{'ok' if p>=th else 'no'}}">{{'Sobrevive' if p>=th else 'No sobrevive'}}</h2>
+<p>Probabilidad estimada de sobrevivir: <b>{{'%.1f'|format(p*100)}} %</b></p>
+<p style="font-size:13px;color:#667">Umbral de decisión: {{'%.2f'|format(th)}}</p></div>
 {% endif %}
 </body></html>
 """
@@ -84,14 +89,15 @@ def index():
     prob = None
     if request.method == "POST":
         prob = float(model.predict_proba(to_frame(request.form))[0, 1])
-    return render_template_string(PAGE, p=prob, f=request.form)
+    return render_template_string(PAGE, p=prob, f=request.form, th=THRESHOLD)
 
 
 @app.post("/api/predict")
 def api_predict():
     prob = float(model.predict_proba(to_frame(request.get_json(force=True)))[0, 1])
     return jsonify({"probabilidad_sobrevivir": round(prob, 4),
-                    "prediccion": int(prob >= 0.5)})
+                    "prediccion": int(prob >= THRESHOLD),
+                    "umbral": THRESHOLD})
 
 
 if __name__ == "__main__":

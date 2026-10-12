@@ -10,6 +10,7 @@ Predicción de la supervivencia de los pasajeros del Titanic comparando 11 algor
 | `4_machine_learning.ipynb` | 11 modelos con validación cruzada (5 pliegues) y prueba: exactitud, precisión, sensibilidad, especificidad, AUC-ROC. Selección e interpretación |
 | `5_pipeline.ipynb` | Pipeline completo (datos crudos → predicción), GridSearchCV y guardado en `models/titanic_pipeline.joblib` |
 | `6_validacion_robusta.ipynb` | Validación cruzada repetida 10×5, intervalos de confianza y prueba t corregida (Nadeau-Bengio) para justificar el mejor modelo |
+| `7_umbral_decision.ipynb` | Ajuste del umbral de decisión (sensibilidad vs especificidad) con predicciones fuera de pliegue; umbral elegido 0.32 |
 | `app.py` | App web Flask y API JSON para predecir |
 
 ## Resultados
