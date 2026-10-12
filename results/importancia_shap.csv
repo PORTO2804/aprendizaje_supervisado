@@ -1,0 +1,16 @@
+,SHAP_%,Permutación_%,Rank_SHAP,Rank_Perm
+Title,39.8,54.5,1,1
+Pclass,11.1,13.4,2,3
+FarePerPerson,10.4,13.5,3,2
+Age,8.2,5.7,4,5
+Embarked,6.3,3.7,5,6
+Fare,5.7,0.0,6,13
+Deck,5.3,2.0,7,7
+FamilySize,4.7,6.1,8,4
+Sex,4.2,0.0,9,13
+HasCabin,2.1,0.0,10,13
+SibSp,1.0,1.0,11,8
+AgeGroup,0.8,0.1,12,9
+Parch,0.2,0.0,13,13
+IsChild,0.1,0.1,14,9
+IsAlone,0.0,0.0,15,13
