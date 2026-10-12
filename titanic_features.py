@@ -42,24 +42,48 @@ class TitanicFeatures(BaseEstimator, TransformerMixin):
 
     Aprende en fit() las medianas de edad por título y la mediana de tarifa
     usando SOLO los datos de entrenamiento (evita fuga de información).
+
+    Mejoras opcionales (cuaderno 9):
+    - split_rare: los títulos raros de MUJER (Lady, Countess, Dr mujer) pasan a
+      "Mrs", así "Rare" queda solo para hombres (Dr, Rev, Col, Major...).
+    - fare_zero: las tarifas en 0 (boletos especiales) se marcan con FareZero=1
+      y se imputan con la mediana de tarifa de su clase.
     """
+
+    def __init__(self, split_rare=False, fare_zero=False):
+        self.split_rare = split_rare
+        self.fare_zero = fare_zero
+
+    def _titles(self, df):
+        t = df["Name"].map(extract_title)
+        if getattr(self, "split_rare", False):
+            t = t.where(~((t == "Rare") & (df["Sex"] == "female")), "Mrs")
+        return t
 
     def fit(self, X, y=None):
         df = X.copy()
-        df["Title"] = df["Name"].map(extract_title)
+        df["Title"] = self._titles(df)
         self.age_by_title_ = df.groupby("Title")["Age"].median().to_dict()
         self.age_global_ = float(df["Age"].median())
         self.fare_median_ = float(df["Fare"].median())
+        pagada = df[df["Fare"] > 0]
+        self.fare_by_class_ = pagada.groupby("Pclass")["Fare"].median().to_dict()
         mode = df["Embarked"].mode()
         self.embarked_mode_ = mode.iloc[0] if len(mode) else "S"
         return self
 
     def transform(self, X):
         df = X.copy()
-        df["Title"] = df["Name"].map(extract_title)
+        df["Title"] = self._titles(df)
         df["Age"] = df.apply(
             lambda r: r["Age"] if pd.notna(r["Age"])
             else self.age_by_title_.get(r["Title"], self.age_global_), axis=1)
+        extra = []
+        if getattr(self, "fare_zero", False):
+            df["FareZero"] = (df["Fare"] == 0).astype(int)
+            imput = df["Pclass"].map(self.fare_by_class_).fillna(self.fare_median_)
+            df["Fare"] = df["Fare"].where(df["Fare"] != 0, imput)
+            extra.append("FareZero")
         df["Fare"] = df["Fare"].fillna(self.fare_median_)
         df["Embarked"] = df["Embarked"].fillna(self.embarked_mode_)
         df["Deck"] = df["Cabin"].map(extract_deck)
@@ -70,4 +94,7 @@ class TitanicFeatures(BaseEstimator, TransformerMixin):
         df["IsChild"] = (df["Age"] < 13).astype(int)
         df["AgeGroup"] = pd.cut(df["Age"], bins=[-1, 12, 18, 35, 60, 120],
                                 labels=["Niño", "Adolescente", "Joven", "Adulto", "Mayor"]).astype(str)
-        return df[NUM_FEATURES + CAT_FEATURES]
+        return df[NUM_FEATURES + extra + CAT_FEATURES]
+
+    def get_num_features(self):
+        return NUM_FEATURES + (["FareZero"] if getattr(self, "fare_zero", False) else [])

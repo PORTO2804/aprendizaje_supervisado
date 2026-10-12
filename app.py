@@ -16,10 +16,16 @@ from flask import Flask, jsonify, render_template_string, request
 
 import titanic_features  # noqa: F401  (necesario para cargar el pipeline guardado)
 
-MODEL_PATH = "models/titanic_pipeline.joblib"
+# Versión del modelo final elegida en 9_fuga_y_mejoras.ipynb (v1 = cuadernos 5 y 7, v2 = cuaderno 9)
+try:
+    VERSION = open("results/modelo_final.txt").read().strip()
+except OSError:
+    VERSION = "v1"
+MODEL_PATH = "models/titanic_pipeline_v2.joblib" if VERSION == "v2" else "models/titanic_pipeline.joblib"
+UMBRAL_PATH = "results/umbral_v2.txt" if VERSION == "v2" else "results/umbral.txt"
 model = joblib.load(MODEL_PATH)
-try:  # umbral ajustado en 7_umbral_decision.ipynb
-    THRESHOLD = float(open("results/umbral.txt").read().strip())
+try:
+    THRESHOLD = float(open(UMBRAL_PATH).read().strip())
 except (OSError, ValueError):
     THRESHOLD = 0.5
 app = Flask(__name__)
@@ -97,7 +103,7 @@ def api_predict():
     prob = float(model.predict_proba(to_frame(request.get_json(force=True)))[0, 1])
     return jsonify({"probabilidad_sobrevivir": round(prob, 4),
                     "prediccion": int(prob >= THRESHOLD),
-                    "umbral": THRESHOLD})
+                    "umbral": THRESHOLD, "modelo": VERSION})
 
 
 if __name__ == "__main__":
